@@ -138,13 +138,23 @@ app.post('/regPlayer', (req, res) => {
   });
 });
 
+var events = {
+  'Crazy Crawler':4,
+  'Molecular Mystery':4,
+  'Compact Condo':1,
+  'Risk Reduction':4,
+  'Lost Lander':4,
+  'Spaghetti Bridge':5,
+  'Ropeway Design':5,
+  'Dev Dash':1,
+}
 app.post('/regTeam', (req, res) => {
   var recieved_data = req.body;
   //console.log(recieved_data)
   var data = {
     name: recieved_data.team_name,
     event: recieved_data.event,
-    team_limit: recieved_data.team_limit,
+    team_limit: events[recieved_data.event],
     members: [],
   };
   User.findOne({ email: recieved_data.team_leader_email }, (err, userDoc) => {
@@ -375,3 +385,5 @@ app.post('/joinTeam', (req, res) => {
 });
 
 module.exports = app;
+
+// http.createServer(app).listen(3000);
