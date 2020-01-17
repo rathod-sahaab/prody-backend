@@ -15,35 +15,27 @@ mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 
-//leader mail extraction
-// function search(nameKey, myArray) {
-//     for (var i = 0; i < myArray.length; i++) {
-//         if (myArray[i]._id === nameKey) {
-//             return myArray[i];
-//         }
-//     }
-// }
+var transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  service: 'gmail',
+  auth: {
+    user: config.email,
+    pass: config.pw,
+  },
+});
 
-// var transporter = nodemailer.createTransport({
-//   host: 'smtp.gmail.com',
-//   port: 465,
-//   secure: true,
-//   service: 'gmail',
-//   auth: {
-//     user: config.email,
-//     pass: config.pw,
-//   },
-// });
-//Email Template
-// const email = new Email({
-//   message: {
-//     from: 'Team ISTE',
-//   },
-//   // uncomment below to send emails in development/test env:
-//   send: true,
-//   preview: false,
-//   transport: transporter,
-// });
+// Email Template
+const email = new Email({
+  message: {
+    from: 'Team ISTE',
+  },
+  // uncomment below to send emails in development/test env:
+  send: true,
+  preview: false,
+  transport: transporter,
+});
 
 //loading models
 var User = require('./models/user');
@@ -102,19 +94,19 @@ app.post('/regPlayer', (req, res) => {
                 //   id: item._id,
                 // });
               })
-              // .then(() => {
-              //   email.send({
-              //     template: path.join(__dirname, 'emails', 'user'),
-              //     message: {
-              //       to: data.email,
-              //     },
-              //     locals: {
-              //       id: mailid,
-              //       name: data.name,
-              //     },
-              //   });
-              // })
-              // .then(() => console.log('email sent'))
+              .then(() => {
+                email.send({
+                  template: path.join(__dirname, 'emails', 'user'),
+                  message: {
+                    to: data.email,
+                  },
+                  locals: {
+                    id: mailid,
+                    name: data.name,
+                  },
+                });
+              })
+              .then(() => console.log('email sent'))
               .catch((err) => console.log(err));
           }
         });
@@ -162,7 +154,7 @@ app.post('/regTeam', (req, res) => {
       res.redirect(
         signalFrontend({
           type: 'error',
-          error: 'Your email is not registered',
+          error: 'The team leader email is not registered',
         }),
       );
       // res.render('error', {
@@ -211,19 +203,19 @@ app.post('/regTeam', (req, res) => {
                   //   name: item.name,
                   // });
                 })
-                // .then(() => {
-                //   email.send({
-                //     template: path.join(__dirname, 'emails', 'team'),
-                //     message: {
-                //       to: userDoc.email,
-                //     },
-                //     locals: {
-                //       Tid: tid,
-                //       Tname: data.name,
-                //     },
-                //   });
-                // })
-                // .then(() => console.log('email sent'))
+                .then(() => {
+                  email.send({
+                    template: path.join(__dirname, 'emails', 'team'),
+                    message: {
+                      to: userDoc.email,
+                    },
+                    locals: {
+                      Tid: tid,
+                      Tname: data.name,
+                    },
+                  });
+                })
+                .then(() => console.log('email sent'))
                 .catch((err) => console.log(err));
 
               Event.findOneAndUpdate(
@@ -293,7 +285,7 @@ app.post('/joinTeam', (req, res) => {
                   res.redirect(
                     signalFrontend({
                       type: 'error',
-                      error: 'Your email is not registered',
+                      error: 'You have already registered for this event',
                     }),
                   );
                   // res.render('error', {
@@ -321,24 +313,24 @@ app.post('/joinTeam', (req, res) => {
                       { id: teamDoc.members[0].email },
                       (err, lead) => {
                         console.log('Email not sent to Leader');
-                        // email
-                        //   .send({
-                        //     template: path.join(
-                        //       __dirname,
-                        //       'emails',
-                        //       'memberJoin',
-                        //     ),
-                        //     message: {
-                        //       to: lead.email,
-                        //     },
-                        //     locals: {
-                        //       team: teamDoc.name,
-                        //       member: userDoc.name,
-                        //       event: teamDoc.event,
-                        //     },
-                        //   })
-                        //   .then(() => console.log('email sent'))
-                        //   .catch((err) => console.log(err));
+                        email
+                          .send({
+                            template: path.join(
+                              __dirname,
+                              'emails',
+                              'memberJoin',
+                            ),
+                            message: {
+                              to: lead.email,
+                            },
+                            locals: {
+                              team: teamDoc.name,
+                              member: userDoc.name,
+                              event: teamDoc.event,
+                            },
+                          })
+                          .then(() => console.log('email sent'))
+                          .catch((err) => console.log(err));
                       },
                     );
                   } else {
